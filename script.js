@@ -1,12 +1,12 @@
 const fName = document.getElementById("fName").value;
 const lName = document.getElementById("lName").value;
-const balance = document.getElementById("balance").value;
+const assets = document.getElementById("assets").value;
 
 
 
 const users = [
-    {fName:"mmd" , lName: "arhami", balance : 0 },
-    {fName:"" , lName: "", balance : 0 }
+    {fName:"mmd" , lName: "arhami", assets : 0 },
+    {fName:"" , lName: "", assets : 0 }
 ]
 
 
@@ -18,7 +18,7 @@ function Add() {
             users.push({
                 fName : fName,
                 lName : lName ,
-                balance : balance
+                assets : assets
             })
         }
     })
