@@ -91,7 +91,7 @@ function renderTable() {
         // Display empty message
         const emptyRow = document.createElement('tr');
         emptyRow.className = 'empty-row';
-        emptyRow.innerHTML = '<td colspan="5">There is no data 📭 </td>';
+        emptyRow.innerHTML = '<td colspan="6">There is no data 📭 </td>';
         tableBody.appendChild(emptyRow);
     }
     else{
@@ -132,12 +132,28 @@ function createTableRow(person , index) {
     const transactionCell = document.createElement('td');
     transactionCell.innerHTML = '<a href="">more...</a>';
 
-    
+    // action cell (delete button)
+    const actionCell = document.createElement('td');
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'ِDelete'; // 🗑
+    deleteButton.className = 'delete-btn';
+        
+    // delete event - using exact index
+    deleteButton.addEventListener('click', () => {
+        if (confirm("Are you sure you want to 'Delete' this user ?")) {
+            deleteUserByIndex(index); 
+        }
+    });
+
+    // add delete button into action cell
+    actionCell.appendChild(deleteButton);
+
     row.appendChild(numberCell);
     row.appendChild(firstNameCell);
     row.appendChild(lastNameCell);
     row.appendChild(assetsCell);
     row.appendChild(transactionCell);
+    row.appendChild(actionCell);
 
     return row;
 }
@@ -148,6 +164,17 @@ function createTableRow(person , index) {
 
 function Minus(params) {
     
+}
+
+// ! ======================= Delete A User 
+// delete a user using exact index
+function deleteUserByIndex(index) {
+    
+    if (index >= 0 && index < users.length) {
+        users.splice(index , 1); // delete from array
+        saveToLocalStorage(); // save in local storage
+        renderTable(); // Re-render the table
+    }
 }
 
 
