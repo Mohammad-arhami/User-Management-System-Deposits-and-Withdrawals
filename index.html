@@ -3,7 +3,7 @@
     <title>Usdt Users</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./sty;e.css">
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     
@@ -19,13 +19,13 @@
         <div class="information-Container">
             <div class="input-container">
                 <label for="fName">First Name : </label>
-                <input type="text" placeholder="Enter your first name"  id="fName" required value="mmd"> <br>
+                <input type="text" placeholder="Enter your first name"  id="fName" required autocomplete="off"> <br>
 
                 <label for="lName">Last Name : </label>
-                <input type="text" placeholder="Enter your last name" id="lName" required value="arhami"> <br>
+                <input type="text" placeholder="Enter your last name" id="lName" required autocomplete="off"> <br>
 
                 <label for="assets">Assets $ :</label>
-                <input type="number" placeholder="Enter the amount" id="assets" required value="100">
+                <input type="number" placeholder="Enter the amount" id="assets" required autocomplete="off">
             </div>
             <div class="btn-container">
                 <button type="submit" id="add">Add</button>
@@ -43,39 +43,28 @@
     <div class="data-container">
 
         <table class="table">
-            <tr>
-                <th>Num</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Assets $</th>
-                <th>Transactions</th>
-            </tr>
-
-            <tr>
-                <td>1</td>
-                <td>alen</td>
-                <td>moonier</td>
-                <td>1300 $</td>
-                <td><a href="">more...</a></td>
-            </tr>
-
-
-            <tr>
-                <td>2</td>
-                <td>john</td>
-                <td>doei</td>
-                <td>2000 $</td>
-                <td><a href="">more...</a></td>
-            </tr>
-    
+            <thead>            
+                <tr>
+                    <th>Num</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Assets $</th>
+                    <th>Transactions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr class="empty-row">
+                    <td colspan="5">There is no data 📭 </td>
+                </tr>
+            </tbody>
         </table>
 
+        <div class="under-table-container">
+            <div class="counter" id="rowCounter">Record Count: 0</div>
+            <button id="clearAllBtn" class="clear-btn">Delete All users 🗑</button>
+        </div>
     </div>
 
-                <!-- <th>Number</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Assets</th> -->
 
     <script src="./script.js"></script>
 
