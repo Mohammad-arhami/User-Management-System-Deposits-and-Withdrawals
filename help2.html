@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت اطلاعات - با ذخیره‌سازی در مرورگر</title>
+    <style>
+        * {
+            font-family: 'Tahoma', 'Segoe UI', system-ui;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        h1 {
+            font-size: 1.7rem;
+            margin-top: 0;
+            color: #1e3c72;
+            border-right: 5px solid #2c7da0;
+            padding-right: 15px;
+        }
+        .info-badge {
+            background: #e6f7ff;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #0056b3;
+            margin: 15px 0;
+            border-right: 3px solid #2c7da0;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
+            align-items: flex-end;
+        }
+        .input-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e66;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            border-color: #2c7da0;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        button {
+            background-color: #2c7da0;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #1f5e7a;
+            transform: scale(1.02);
+        }
+        .clear-btn {
+            background-color: #e53e3e;
+            margin-right: 10px;
+        }
+        .clear-btn:hover {
+            background-color: #c53030;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        th, td {
+            text-align: right;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #eef2fa;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        .empty-row td {
+            text-align: center;
+            color: #888;
+            padding: 25px;
+        }
+        .delete-btn {
+            background: #e53e3e;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .delete-btn:hover {
+            background: #c53030;
+            transform: scale(1.02);
+        }
+        .counter {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #2d3748;
+            background: #eef2fa;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 40px;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #718096;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 مدیریت اطلاعات (با ذخیره دائمی)</h1>
+    
+    <div class="info-badge">
+        💾 اطلاعات بعد از رفرش صفحه هم باقی می‌مانند! (ذخیره در localStorage مرورگر)
+    </div>
+
+    <!-- فرم ورودی -->
+    <div class="form-row">
+        <div class="input-group">
+            <label>نام</label>
+            <input type="text" id="firstName" placeholder="مثلا علی" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>نام خانوادگی</label>
+            <input type="text" id="lastName" placeholder="مثلا رضایی" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>عدد</label>
+            <input type="number" id="numberValue" placeholder="مثلا ۲۵" autocomplete="off">
+        </div>
+        <button id="addBtn">➕ افزودن به جدول</button>
+        <button id="clearAllBtn" class="clear-btn">🗑 پاک کردن همه</button>
+    </div>
+
+    <!-- جدول نمایش داده‌ها -->
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>نام</th>
+                <th>نام خانوادگی</th>
+                <th>عدد</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr class="empty-row">
+                <td colspan="4">📭 هیچ داده‌ای وجود ندارد</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="counter" id="rowCounter">تعداد رکوردها: ۰</div>
+    <footer>✅ اطلاعات به صورت خودکار در مرورگر ذخیره می‌شوند. حتی با بستن و باز کردن مرورگر هم باقی می‌مانند!</footer>
+</div>
+
+<script>
+    // ============================================
+    // آرایه اصلی برای نگهداری اطلاعات (دیتابیس در حافظه)
+    // ============================================
+    let peopleArray = [];  // هر عضو: { firstName, lastName, number }
+
+    // کلید برای ذخیره در localStorage
+    const STORAGE_KEY = "people_data";
+
+    // ============================================
+    // توابع کمکی برای کار با localStorage
+    // ============================================
+    
+    // ذخیره آرایه در localStorage
+    function saveToLocalStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(peopleArray));
+    }
+
+    // بارگذاری آرایه از localStorage
+    function loadFromLocalStorage() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            peopleArray = JSON.parse(savedData);
+        } else {
+            peopleArray = [];  // اگر داده‌ای نبود آرایه خالی
+        }
+    }
+
+    // ============================================
+    // توابع نمایش جدول (بر اساس آرایه peopleArray)
+    // ============================================
+    
+    // نمایش همه داده‌های آرایه در جدول
+    function renderTable() {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = ''; // پاک کردن جدول فعلی
+
+        if (peopleArray.length === 0) {
+            // نمایش پیغام خالی بودن
+            const emptyRow = document.createElement('tr');
+            emptyRow.className = 'empty-row';
+            emptyRow.innerHTML = '<td colspan="4">📭 هیچ داده‌ای وجود ندارد</td>';
+            tableBody.appendChild(emptyRow);
+        } else {
+            // برای هر آیتم در آرایه، یک سطر بساز
+            peopleArray.forEach((item, index) => {
+                const row = createTableRow(item, index);
+                tableBody.appendChild(row);
+            });
+        }
+
+        // به‌روزرسانی شمارنده
+        updateCounter();
+    }
+
+    // ساخت یک سطر جدول برای یک شخص
+    function createTableRow(person, index) {
+        const row = document.createElement('tr');
+        
+        // سلول نام
+        const nameCell = document.createElement('td');
+        nameCell.textContent = person.firstName;
+        
+        // سلول نام خانوادگی
+        const lastNameCell = document.createElement('td');
+        lastNameCell.textContent = person.lastName;
+        
+        // سلول عدد
+        const numberCell = document.createElement('td');
+        numberCell.textContent = person.number;
+        
+        // سلول عملیات (دکمه حذف)
+        const actionCell = document.createElement('td');
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '🗑 حذف';
+        deleteButton.className = 'delete-btn';
+        
+        // رویداد حذف - با استفاده از ایندکس دقیق
+        deleteButton.addEventListener('click', () => {
+            deletePersonByIndex(index);
+        });
+        
+        actionCell.appendChild(deleteButton);
+        
+        row.appendChild(nameCell);
+        row.appendChild(lastNameCell);
+        row.appendChild(numberCell);
+        row.appendChild(actionCell);
+        
+        return row;
+    }
+
+    // حذف یک شخص با ایندکس مشخص
+    function deletePersonByIndex(index) {
+        if (index >= 0 && index < peopleArray.length) {
+            peopleArray.splice(index, 1);  // حذف از آرایه
+            saveToLocalStorage();           // ذخیره در localStorage
+            renderTable();                  // رندر مجدد جدول
+        }
+    }
+
+    // به‌روزرسانی شمارنده
+    function updateCounter() {
+        const counterSpan = document.getElementById('rowCounter');
+        counterSpan.textContent = `تعداد رکوردها: ${peopleArray.length}`;
+    }
+
+    // ============================================
+    // افزودن شخص جدید به آرایه
+    // ============================================
+    
+    function addPerson(firstName, lastName, number) {
+        // اضافه کردن به آرایه
+        peopleArray.push({
+            firstName: firstName,
+            lastName: lastName,
+            number: number
+        });
+        
+        // ذخیره در localStorage
+        saveToLocalStorage();
+        
+        // رندر مجدد جدول
+        renderTable();
+    }
+
+    // ============================================
+    // مدیریت رویداد افزودن از فرم
+    // ============================================
+    
+    function handleAdd() {
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const numberInput = document.getElementById('numberValue');
+        
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        const numberValue = numberInput.value.trim();
+        
+        // اعتبارسنجی
+        if (firstName === "" || lastName === "" || numberValue === "") {
+            alert("⚠️ لطفاً تمام فیلدها (نام، نام خانوادگی و عدد) را پر کنید!");
+            return;
+        }
+        
+        if (isNaN(numberValue)) {
+            alert("⚠️ مقدار وارد شده برای 'عدد' باید یک عدد باشد!");
+            return;
+        }
+        
+        // اضافه کردن به آرایه و localStorage
+        addPerson(firstName, lastName, numberValue);
+        
+        // پاک کردن فرم
+        firstNameInput.value = "";
+        lastNameInput.value = "";
+        numberInput.value = "";
+        firstNameInput.focus();
+    }
+    
+    // پاک کردن همه داده‌ها
+    function clearAllData() {
+        if (confirm("آیا مطمئن هستید که می‌خواهید تمام داده‌ها را پاک کنید؟")) {
+            peopleArray = [];
+            saveToLocalStorage();
+            renderTable();
+        }
+    }
+
+    // ============================================
+    // مقداردهی اولیه هنگام لود صفحه
+    // ============================================
+    
+    function init() {
+        // بارگذاری داده‌ها از localStorage به آرایه
+        loadFromLocalStorage();
+        
+        // نمایش داده‌ها در جدول
+        renderTable();
+        
+        // اتصال رویدادها به دکمه‌ها
+        document.getElementById('addBtn').addEventListener('click', handleAdd);
+        document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+        
+        // پشتیبانی از کلید Enter
+        const inputs = ['firstName', 'lastName', 'numberValue'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAdd();
+                }
+            });
+        });
+    }
+    
+    // اجرای تابع مقداردهی اولیه
+    init();
+</script>
+</body>
+</html>
