@@ -320,12 +320,15 @@ table tbody .empty-row{
 }
 
 
+/* ! ============================ Under Table */
+
+
 .data-container .under-table-container{
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    padding: 60px 110px;
+    padding: 60px 105px;
     margin-bottom: 100px;
 }
 
@@ -337,12 +340,13 @@ table tbody .empty-row{
     padding: 10px 20px;
     border: 1px solid var(--white);
     border-radius: 10px;
-    align-self: flex-start;
+    margin-right: auto;
 }
 
 
-.under-table-container .clear-btn {
-    background-color: rgb(230, 0, 0);
+/* ! =========================== Buttons Group */
+
+.under-table-container .useful-buttons{
     color: var(--white);
     border: none;
     padding: 10px 20px;
@@ -351,14 +355,35 @@ table tbody .empty-row{
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
+    margin: 0 5px;
+}
+
+.under-table-container .save-backup {
+    background-color: rgb(28, 95, 56);
+}
+
+.under-table-container .save-backup:hover {
+    background-color: rgb(35, 119, 70);
+    transform: scale(1.01);
+}
+
+.under-table-container .restore-backup {
+    background-color: rgb(21, 103, 158);
+}
+
+.under-table-container .restore-backup:hover {
+    background-color: rgb(26, 123, 187);
+    transform: scale(1.01);
+}
+
+.under-table-container .clear-btn {
+    background-color: rgb(230, 0, 0);
 }
 
 .under-table-container .clear-btn:hover {
     background-color: rgb(255, 0, 0);
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
-
-
 
 
 @keyframes slideDown {
@@ -373,6 +398,7 @@ table tbody .empty-row{
 }
 
 
+/* ! ====================== Modal */
 
 .modal {
     display: none;

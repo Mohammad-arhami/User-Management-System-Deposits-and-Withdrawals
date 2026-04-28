@@ -4,6 +4,8 @@ const amountInput = document.getElementById("amount");
 const depositBtn = document.getElementById("deposit");
 const withdrawBtn = document.getElementById("withdraw");
 const clearUserTransactionsBtn = document.getElementById("clearUserTransactionsBtn");
+const saveBackupBtn = document.getElementById("saveBackupBtn");
+const restoreBackupBtn = document.getElementById("restoreBackupBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
 
 
@@ -98,8 +100,6 @@ function Deposit() {
     const firstName = sanitizeInput(firstNameInput.value.trim());
     const lastName = sanitizeInput(lastNameInput.value.trim());
     const amount = sanitizeNumber( amountInput.value.trim());
-
-    console.log(firstName , lastName , amount);
     
     
     // input data validation
@@ -341,10 +341,36 @@ function updateCounter() {
     counterSpan.textContent = `Record Count: ${users.length}`;
 }
 
+// ! ======================= Save Backup
+// deep copy and save as backup in local storage
+function saveBackup() {
+    const backup = JSON.parse(JSON.stringify(users))
+    localStorage.setItem("users-backup" , JSON.stringify(backup));
+    showMessage("Backup saved successfully 💾","success");
+}
+
+// ! ======================= Restore Backup
+// restore the= last backup from local storage
+function restoreBackup() {
+    const savedBackup = localStorage.getItem("users-backup");
+    if (savedBackup) {
+        if (confirm("⚠️ Are you sure ? The current data will be replaced with the 'backup'")) {
+            users = JSON.parse(savedBackup);
+            saveToLocalStorage();
+            renderTable();
+            showMessage("📂 Data successfully restored from backup","success");
+        }
+    } else{
+        showMessage("❌ No backup found! Click the 'Backup' button first","fail");
+    }
+}
 
 // ! ======================= Clear All Data
 // clear all data in array and local storage
 function clearAllData() {
+    if (users.length === 0) {
+        return showMessage("❌ There is no data to delete","fail");
+    }
     if (confirm("⚠️ Are you sure you want to 'Delete' all data")) {
         users = [];
         saveToLocalStorage();
@@ -444,4 +470,6 @@ window.addEventListener('click', (e) => {
 depositBtn.addEventListener("click" , Deposit);
 withdrawBtn.addEventListener("click" , Minus);
 clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? clearUserTransactions(currentSelectedUser.id) : false);
+saveBackupBtn.addEventListener("click" , saveBackup);
+restoreBackupBtn.addEventListener("click" , restoreBackup)
 clearAllBtn.addEventListener("click" , clearAllData);
