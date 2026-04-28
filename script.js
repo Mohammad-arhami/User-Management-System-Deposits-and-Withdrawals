@@ -1,13 +1,16 @@
 const firstNameInput = document.getElementById("fName");
 const lastNameInput = document.getElementById("lName");
-const assetsInput = document.getElementById("assets");
-const addBtn = document.getElementById("add");
-const minusBtn = document.getElementById("minus");
-const clearAllBtn = document.getElementById("clearAllBtn")
+const amountInput = document.getElementById("amount");
+const depositBtn = document.getElementById("deposit");
+const withdrawBtn = document.getElementById("withdraw");
+const clearUserTransactionsBtn = document.getElementById("clearUserTransactionsBtn");
+const clearAllBtn = document.getElementById("clearAllBtn");
+
 
 
 // array for storage users localy 
 let users = [];
+let currentSelectedUser = null;
 
 // key for save to localstorage
 const STORAGE_KEY = "users_data";
@@ -32,52 +35,191 @@ function loadFromLocalStorage() {
     }
 }
 
-// ! ====================== Add Function
+
+// ! ====================== Get Current Date And Time
+// get current date and time and return it as an object
+function getCurrentDateTime() {
+    const now = new Date();  
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return {
+        date: `${year}/${month}/${day}`,
+        time: `${hours}:${minutes}:${seconds}`,
+        timestamp: now.getTime()
+    };
+}
+
+
+
+// ! ======================= Find User By Name
+// find existing user by name and last-name in array and return it
+function findUserByName(firstName, lastName) {
+    return users.find(user => 
+        user.firstName.trim().toLowerCase() === firstName.trim().toLowerCase() &&
+        user.lastName.trim().toLowerCase() === lastName.trim().toLowerCase()
+    );
+}
+
+
+// ! ======================= Show Message Function
+// display a message box at the top of the page after add or minus
+function showMessage(msg, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = msg;
+    messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? 'rgb(0, 117, 82)' : 'rgb(231, 0, 0)'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideDown 0.3s ease;
+    `;
+    document.body.appendChild(messageDiv);
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+
+
+
+// ! ====================== Depoit Function
 // get data from input , check validation and add to main array and local storage
-function Add() {
+function Deposit() {
     const firstName = firstNameInput.value.trim();
     const lastName = lastNameInput.value.trim();
-    const assets = assetsInput.value.trim();
+    const amount = amountInput.value.trim();
     
     // input data validation
-    if (firstName === "" || lastName === "" || assets === "") {
+    if (firstName === "" || lastName === "" || amount === "") {
         alert("⚠️ Please, fill in the blanks");
         return;
     }
 
-    if (isNaN(assets)) {
+    if (isNaN(amount)) {
         alert("⚠️ Please, enter a valid number!");
         return;
     }
 
     // add user to users array and save to localstorage
-    addUser(firstName , lastName , assets);
+    addUser(firstName , lastName , amount);
     
     // Empty the input values
     firstNameInput.value = "";
     lastNameInput.value = "";
-    assetsInput.value = "";
+    amountInput.value = "";
 
     // fucus on the first input
     firstNameInput.focus();
     
 }
 
-// ! ========================= Add User Function
+// ! ========================= Add User Function (main function)
 // Add User to main array
-function addUser(firstName, lastName , assets) {
-    // add user objec to array
-    users.push({
-        firstName : firstName,
-        lastName : lastName,
-        assets : assets
-    })
+function addUser(firstName, lastName , amount) {
+    // change amount type from string to number
+    const amountNum = parseFloat(amount)
 
-    // save in local storage
-    saveToLocalStorage();
+    const existingUser = findUserByName(firstName, lastName);
+    const dateTime = getCurrentDateTime();
 
-    // Re-render the table
-    renderTable();
+    // creat transaction object
+    const newTransaction = {
+        date : dateTime.date,
+        time : dateTime.time,
+        amount : amountNum,
+        timestamp : dateTime.timestamp
+    }
+    
+
+    // check user existing
+    if (existingUser) {
+        existingUser.transactions.push(newTransaction);
+        existingUser.totalAssets += amountNum; // add new amount to totalAssets
+        saveToLocalStorage();
+        renderTable();
+        showMessage(`✅ transaction successful ${amountNum.toLocaleString()} $ added to ${firstName} ${lastName}`,"success");
+    } else{
+        
+        // create new user
+        const newUser = {
+            id : Date.now(),
+            firstName : firstName,
+            lastName : lastName,
+            totalAssets : amountNum,
+            transactions : [newTransaction]
+        };
+
+        // add new user objec to array
+        users.push(newUser);
+
+        // save in local storage
+        saveToLocalStorage();
+
+        // Re-render the table
+        renderTable();
+
+        // show message (user added)
+        showMessage( "✅ User Added","success");
+    }
+    return true
+};
+
+
+// ! ===================== show Transactions 
+// show user transactions in modal
+function showTransactions(person) {
+    currentSelectedUser = person;
+    const modal = document.getElementById("transactionModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const transactionsList = document.getElementById("transactionsList");
+
+    modalTitle.textContent = `📋 ${person.firstName} ${person.lastName} transactions`;
+
+    if (person.transactions.length === 0) {
+        transactionsList.innerHTML = '<div class="empty-state">No Transactions Recorded</div>';
+    } else{
+        transactionsList.innerHTML = person.transactions.map((trans , index) => `
+            <div class="transaction-item">
+                <strong>#${index + 1}</strong> - Amount: <span style="color: rgb(7, 204, 145); font-weight: bold;">${trans.amount.toLocaleString()} $</span><br> 📅 Date: ${trans.date} - 🕐 Hour: ${trans.time}
+            </div>
+        `).join('');
+    }
+
+    modal.style.display = 'flex';
+}
+
+
+// ! ====================== Clear User Transactions Function
+// clear user transactions by id
+function clearUserTransactions(userId) {
+    if (confirm("⚠️ Are you sure? All transactions for this user will be deleted and the balance will be reduced to '0 $'")) {
+        const user = users.find(person => person.id === userId);
+        if (user) {
+            user.transactions = [];
+            user.totalAssets = 0;
+
+            saveToLocalStorage();
+            renderTable();
+
+            const modal = document.getElementById("transactionModal");
+            if (modal.style.display === "flex") {
+                modal.style.display = "none";
+                currentSelectedUser = null;
+            }
+
+            showMessage(`🗑 All transactions for ${user.firstName} ${user.lastName} have been deleted`,"success");
+        }
+    }
 }
 
 
@@ -125,33 +267,43 @@ function createTableRow(person , index) {
     lastNameCell.textContent = person.lastName;
 
     // assets cell
-    const assetsCell = document.createElement('td');
-    assetsCell.textContent = person.assets;  
+    const totalAssetsCell = document.createElement('td');
+    totalAssetsCell.textContent = person.totalAssets + " $";
 
     // transaction cell
     const transactionCell = document.createElement('td');
-    transactionCell.innerHTML = '<a href="">more...</a>';
+    const viewButton = document.createElement("a");
+    viewButton.textContent = "Show";
+    viewButton.className = "view-btn";
+
+    // add view button into transaction cell
+    transactionCell.appendChild(viewButton);
+
+    // view transactions event
+    viewButton.addEventListener("click" , () => {
+        showTransactions(person);
+    })
 
     // action cell (delete button)
     const actionCell = document.createElement('td');
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'ِDelete'; // 🗑
     deleteButton.className = 'delete-btn';
-        
+    
+    // add delete button into action cell
+    actionCell.appendChild(deleteButton);
+
     // delete event - using exact index
     deleteButton.addEventListener('click', () => {
-        if (confirm("Are you sure you want to 'Delete' this user ?")) {
+        if (confirm("⚠️ Are you sure you want to 'Delete' this user ?")) {
             deleteUserByIndex(index); 
         }
     });
 
-    // add delete button into action cell
-    actionCell.appendChild(deleteButton);
-
     row.appendChild(numberCell);
     row.appendChild(firstNameCell);
     row.appendChild(lastNameCell);
-    row.appendChild(assetsCell);
+    row.appendChild(totalAssetsCell);
     row.appendChild(transactionCell);
     row.appendChild(actionCell);
 
@@ -171,9 +323,11 @@ function Minus(params) {
 function deleteUserByIndex(index) {
     
     if (index >= 0 && index < users.length) {
-        users.splice(index , 1); // delete from array
-        saveToLocalStorage(); // save in local storage
-        renderTable(); // Re-render the table
+        // users.splice(index , 1); // delete from array
+        // saveToLocalStorage(); // save in local storage
+        // renderTable(); // Re-render the table
+        showMessage(`🗑 User ${users[index].firstName} ${users[index].lastName} was successfully deleted`, "success");
+
     }
 }
 
@@ -189,7 +343,7 @@ function updateCounter() {
 // ! ======================= Clear All Data
 // clear all data in array and local storage
 function clearAllData() {
-    if (confirm("Are you sure you want to 'Delete' all data")) {
+    if (confirm("⚠️ Are you sure you want to 'Delete' all data")) {
         users = [];
         saveToLocalStorage();
         renderTable();
@@ -202,7 +356,7 @@ function clearAllData() {
 function onEnterKey(e) {
     if (e.key === "Enter") {
         e.preventDefault();
-        Add();
+        Deposit();
     }
 }
 
@@ -218,7 +372,7 @@ function init() {
     renderTable();
 
     // handle the enter key
-    const inputs = ['fName','lName','assets'];
+    const inputs = ['fName','lName','amount'];
     inputs.forEach((id) => {
         document.getElementById(id).addEventListener('keypress' , onEnterKey);
     })
@@ -227,6 +381,25 @@ function init() {
 init();
 
 
-addBtn.addEventListener("click" , Add);
-minusBtn.addEventListener("click" , Minus);
+// ! ====================== Modal Event
+// close modal event
+const modal = document.getElementById('transactionModal');
+const closeModal = document.querySelector('.close-modal');
+    
+closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+    currentSelectedUser = null;
+});
+    
+window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+        currentSelectedUser = null;
+    }
+});
+
+
+depositBtn.addEventListener("click" , Deposit);
+withdrawBtn.addEventListener("click" , Minus);
+clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? clearUserTransactions(currentSelectedUser.id) : false);
 clearAllBtn.addEventListener("click" , clearAllData);
