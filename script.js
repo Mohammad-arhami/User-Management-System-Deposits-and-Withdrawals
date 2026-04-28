@@ -323,9 +323,9 @@ function Minus(params) {
 function deleteUserByIndex(index) {
     
     if (index >= 0 && index < users.length) {
-        // users.splice(index , 1); // delete from array
-        // saveToLocalStorage(); // save in local storage
-        // renderTable(); // Re-render the table
+        users.splice(index , 1); // delete from array
+        saveToLocalStorage(); // save in local storage
+        renderTable(); // Re-render the table
         showMessage(`🗑 User ${users[index].firstName} ${users[index].lastName} was successfully deleted`, "success");
 
     }
