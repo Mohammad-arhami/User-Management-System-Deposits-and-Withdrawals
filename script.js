@@ -95,9 +95,12 @@ function showMessage(msg, type) {
 // ! ====================== Depoit Function
 // get data from input , check validation and add to main array and local storage
 function Deposit() {
-    const firstName = firstNameInput.value.trim();
-    const lastName = lastNameInput.value.trim();
-    const amount = amountInput.value.trim();
+    const firstName = sanitizeInput(firstNameInput.value.trim());
+    const lastName = sanitizeInput(lastNameInput.value.trim());
+    const amount = sanitizeNumber( amountInput.value.trim());
+
+    console.log(firstName , lastName , amount);
+    
     
     // input data validation
     if (firstName === "" || lastName === "" || amount === "") {
@@ -120,7 +123,6 @@ function Deposit() {
 
     // fucus on the first input
     firstNameInput.focus();
-    
 }
 
 // ! ========================= Add User Function (main function)
@@ -153,8 +155,8 @@ function addUser(firstName, lastName , amount) {
         // create new user
         const newUser = {
             id : Date.now(),
-            firstName : firstName,
-            lastName : lastName,
+            firstName : escapeHtml(firstName),
+            lastName : escapeHtml(lastName),
             totalAssets : amountNum,
             transactions : [newTransaction]
         };
@@ -361,16 +363,56 @@ function onEnterKey(e) {
 }
 
 
+// ! ===================== Security functions
+// Security function 1 : Clear user input (for storage)
+function sanitizeInput(str) {
+    if (!str) return '';
+    // Remove spaces from the beginning and end
+    let cleaned = str.trim();
+    // Remove duplicate spaces
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    // Remove control characters
+    cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, '');
+    return cleaned;
+}
+
+// Security Function 2 : Validation Number (for Value Field)
+function sanitizeNumber(input) {
+    let num = parseFloat(input);
+    if (isNaN(num)) return 0;
+    if (num < 0) return 0;
+    // Limit to 10 billion
+    if (num > 10000000000) return 10000000000;
+    return num;
+}
+
+// Security Function 3 : helper function to prevent XSS 
+function escapeHtml(str) {
+    // If the input was empty
+    if (!str) return '';
+    // Character Conversion Map
+    const escapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;'
+    };
+    // Replace with regex
+    return str.replace(/[&<>"'/]/g, function(m) {
+        return escapeMap[m];
+    });
+}
+
 
 // ! ===================== Initialization On Page Load
 // initialization on page load
 function init() {
     // get array data from local storage
     loadFromLocalStorage();
-
     // show data in rable
     renderTable();
-
     // handle the enter key
     const inputs = ['fName','lName','amount'];
     inputs.forEach((id) => {
@@ -378,7 +420,7 @@ function init() {
     })
 }
 
-init();
+init(); // RUN
 
 
 // ! ====================== Modal Event
