@@ -443,23 +443,71 @@ table tbody .empty-row{
 .close-modal:hover {
     color: rgb(194, 0, 0);
 }     
-           
+          
+
+/* ! ================================ transaction */
+
 .transaction-item {
     background: transparent;
     color:rgb(247, 247, 247);
     padding: 12px;
     margin: 15px 0;
     border-radius: 8px;
-    border-left: 3px solid rgb(7, 204, 145);
 }
 
 .empty-state {
     text-align: center;
-    color: rgb(157, 166, 182);
+    color: rgb(173, 178, 187);
     padding: 40px;
 }
 
+       
+.transaction-deposit {
+    border-left: 3px solid rgb(0 165 116);
+}
+        
+.transaction-withdraw {
+    border-left: 3px solid rgb(255, 11, 11);
+}
+        
+.deposit-amount {
+    color: rgb(7, 204, 145);
+    font-weight: bold;
+}
+        
+.withdraw-amount {
+    color: rgb(255, 11, 11);
+    font-weight: bold;
+}
+        
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: rgb(7, 204, 145);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+        
+.transaction-type-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    margin-right: 5px;
+}
+        
+.type-deposit {
+    background: rgb(0 165 116);
+    color: white;
+}
+        
+.type-withdraw {
+    background: rgb(255, 0, 0);
+    color: white;
+}
 
+/* ! ======================= Clear Transactions */
 .clear-transactions-btn{
     background: rgb(190, 0, 0);
     color: white;

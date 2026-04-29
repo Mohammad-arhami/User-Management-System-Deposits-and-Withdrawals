@@ -95,12 +95,11 @@ function showMessage(msg, type) {
 
 
 // ! ====================== Depoit Function
-// get data from input , check validation and add to main array and local storage
-function Deposit() {
+// get data from input , check validation and excute deposit transaction function
+function deposit() {
     const firstName = sanitizeInput(firstNameInput.value.trim());
     const lastName = sanitizeInput(lastNameInput.value.trim());
     const amount = sanitizeNumber( amountInput.value.trim());
-    
     
     // input data validation
     if (firstName === "" || lastName === "" || amount === "") {
@@ -113,8 +112,8 @@ function Deposit() {
         return;
     }
 
-    // add user to users array and save to localstorage
-    addUser(firstName , lastName , amount);
+    // implementation of deposit operations
+    depositTransaction(firstName , lastName , amount);
     
     // Empty the input values
     firstNameInput.value = "";
@@ -125,9 +124,9 @@ function Deposit() {
     firstNameInput.focus();
 }
 
-// ! ========================= Add User Function (main function)
-// Add User to main array
-function addUser(firstName, lastName , amount) {
+// ! ========================= Deposit Transaction Function
+// implementation of deposit operations
+function depositTransaction(firstName, lastName , amount) {
     // change amount type from string to number
     const amountNum = parseFloat(amount)
 
@@ -139,9 +138,9 @@ function addUser(firstName, lastName , amount) {
         date : dateTime.date,
         time : dateTime.time,
         amount : amountNum,
+        type : "deposit",
         timestamp : dateTime.timestamp
-    }
-    
+    }    
 
     // check user existing
     if (existingUser) {
@@ -149,9 +148,8 @@ function addUser(firstName, lastName , amount) {
         existingUser.totalAssets += amountNum; // add new amount to totalAssets
         saveToLocalStorage();
         renderTable();
-        showMessage(`✅ transaction successful ${amountNum.toLocaleString()} $ added to ${firstName} ${lastName}`,"success");
+        showMessage(`🟢 transaction successful ${amountNum.toLocaleString()} $ added to ${firstName} ${lastName}`,"success");
     } else{
-        
         // create new user
         const newUser = {
             id : Date.now(),
@@ -172,7 +170,8 @@ function addUser(firstName, lastName , amount) {
 
         // show message (user added)
         showMessage( "✅ User Added","success");
-    }
+    };
+
     return true
 };
 
@@ -190,14 +189,103 @@ function showTransactions(person) {
     if (person.transactions.length === 0) {
         transactionsList.innerHTML = '<div class="empty-state">No Transactions Recorded</div>';
     } else{
-        transactionsList.innerHTML = person.transactions.map((trans , index) => `
-            <div class="transaction-item">
-                <strong>#${index + 1}</strong> - Amount: <span style="color: rgb(7, 204, 145); font-weight: bold;">${trans.amount.toLocaleString()} $</span><br> 📅 Date: ${trans.date} - 🕐 Hour: ${trans.time}
-            </div>
-        `).join('');
+        transactionsList.innerHTML = person.transactions.map((trans , index) => {
+            const isDeposit = trans.type === "deposit";
+            const amountClass = isDeposit ? "deposit-amount" : "withdraw-amount";
+            const amountSign = isDeposit ? "+" : "-";
+            const transactionClass = isDeposit ? "transaction-deposit" : "transaction-withdraw";
+            const typeText = isDeposit ? "Deposit" : "Withdraw";
+            const typeBadgeClass = isDeposit ? "type-deposit" : "type-withdraw";
+                
+            return `
+                <div class="transaction-item ${transactionClass}">
+                    <div>
+                        <span class="transaction-type-badge ${typeBadgeClass}">${typeText}</span>
+                        <strong>#${index + 1}</strong> - Amount: <span class="${amountClass}">${amountSign} ${trans.amount.toLocaleString()} $</span>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 0.85rem; color: rgb(216, 216, 216);">
+                        📅  Date: ${trans.date} - 🕐 Hour: ${trans.time}
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     modal.style.display = 'flex';
+}
+
+// `
+//             <div class="transaction-item">
+//                 <strong>#${index + 1}</strong> - Amount: <span style="color: rgb(7, 204, 145); font-weight: bold;">${trans.amount.toLocaleString()} $</span><br> 📅 Date: ${trans.date} - 🕐 Hour: ${trans.time}
+//             </div>
+//         `).join('')
+
+
+// ! ===================== Withdraw Function
+// get data from input , check validation and excute withdraw transaction function
+function withdraw() {
+    const firstName = sanitizeInput(firstNameInput.value.trim());
+    const lastName = sanitizeInput(lastNameInput.value.trim());
+    const amount = sanitizeNumber( amountInput.value.trim());
+    
+    // input data validation
+    if (firstName === "" || lastName === "" || amount === "") {
+        alert("⚠️ Please, fill in the blanks");
+        return;
+    }
+
+    if (isNaN(amount)) {
+        alert("⚠️ Please, enter a valid number!");
+        return;
+    }
+
+    // implementation of withdraw operations
+    withdrawTransaction(firstName , lastName , amount);
+    
+    // Empty the input values
+    firstNameInput.value = "";
+    lastNameInput.value = "";
+    amountInput.value = "";
+
+    // fucus on the first input
+    firstNameInput.focus();
+}
+
+
+// ! ===================== Withdraw Tranaction Function
+// Checking user existence and implementation of withdraw operations
+function withdrawTransaction(firstName , lastName , amount) {
+    // change amount type from string to number
+    const amountNum = parseFloat(amount)
+
+    const existingUser = findUserByName(firstName, lastName);
+    const dateTime = getCurrentDateTime();
+
+    // creat transaction object
+    const newTransaction = {
+        date : dateTime.date,
+        time : dateTime.time,
+        amount : amountNum,
+        type : "withdraw",
+        timestamp : dateTime.timestamp
+    }  
+
+    if (!existingUser) {
+        showMessage(`❌ Error: User with name ${firstName} ${lastName} not found! User must exist to withdraw`,"fail");
+        return false;
+    }
+
+    if (existingUser.totalAssets < amountNum) {
+        showMessage(`❌ Error: Insufficient balance! The current balance is ${existingUser.totalAssets.toLocaleString()} $`,"fail");
+        return false;
+    }
+
+    existingUser.transactions.push(newTransaction);
+    existingUser.totalAssets -= amountNum;
+    saveToLocalStorage();
+    renderTable();
+    showMessage(`🔴 Withdrawal of ${amountNum.toLocaleString()} $ from ${firstName} ${lastName} account was successful! New balance: ${existingUser.totalAssets.toLocaleString()} $`,"success");
+    return true;
 }
 
 
@@ -310,14 +398,6 @@ function createTableRow(person , index) {
     row.appendChild(actionCell);
 
     return row;
-}
-
-
-
-// ! ====================== Minus Function
-
-function Minus(params) {
-    
 }
 
 // ! ======================= Delete A User 
@@ -470,9 +550,10 @@ window.addEventListener('click', (e) => {
     }
 });
 
-
-depositBtn.addEventListener("click" , Deposit);
-withdrawBtn.addEventListener("click" , Minus);
+// ! ===================== Events
+// event execution
+depositBtn.addEventListener("click" , deposit);
+withdrawBtn.addEventListener("click" , withdraw);
 clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? clearUserTransactions(currentSelectedUser.id) : false);
 saveBackupBtn.addEventListener("click" , saveBackup);
 restoreBackupBtn.addEventListener("click" , restoreBackup)
