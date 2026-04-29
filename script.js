@@ -344,9 +344,13 @@ function updateCounter() {
 // ! ======================= Save Backup
 // deep copy and save as backup in local storage
 function saveBackup() {
-    const backup = JSON.parse(JSON.stringify(users))
-    localStorage.setItem("users-backup" , JSON.stringify(backup));
-    showMessage("Backup saved successfully 💾","success");
+    const backup = JSON.parse(JSON.stringify(users));
+    if (backup.length === 0) {
+        showMessage("❌ There is no data to backup","fail");
+    } else{
+        localStorage.setItem("users-backup" , JSON.stringify(backup));
+        showMessage("Backup saved successfully 💾","success");
+    }
 }
 
 // ! ======================= Restore Backup
