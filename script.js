@@ -7,15 +7,154 @@ const clearUserTransactionsBtn = document.getElementById("clearUserTransactionsB
 const saveBackupBtn = document.getElementById("saveBackupBtn");
 const restoreBackupBtn = document.getElementById("restoreBackupBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
-
-
+const loginBtn = document.getElementById("loginBtn");
+const passwordInput = document.getElementById("passwordInput");
+const lockScreenBtn = document.getElementById("lockScreenBtn");
+const changePasswordBtn = document.getElementById("changePasswordBtn");
 
 // array for storage users localy 
 let users = [];
 let currentSelectedUser = null;
 
-// key for save to localstorage
+// users key for save to localstorage
 const STORAGE_KEY = "users_data";
+
+// password key for save to localstorage
+const PASSWORD_KEY = "app_password";
+const DEFAULT_PASSWORD = "1234";
+let lockTimeout = null;
+const LOCK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minuts
+
+
+// ! ====================== Save Password To Local Storage
+// save password with simple encryption (btoa) to local storage
+function savePassword(password) {
+    localStorage.setItem(PASSWORD_KEY, btoa(password));
+}
+
+// !======================= Check Password Function
+// check password functi9on
+function checkPassword(inputPassword) {
+    // Get saved password from localStorage
+    const saved = localStorage.getItem(PASSWORD_KEY);
+    // If no password was saved
+    if (!saved) {
+        // Save the default password
+        savePassword(DEFAULT_PASSWORD);
+        // Check if the entered password is the same as the default password (return true)
+        return inputPassword === DEFAULT_PASSWORD;
+    }
+    // If there is a stored password Convert the stored password from Base64 to plain text and compare it with the entered password
+    return inputPassword === atob(saved);
+}
+
+// ! ====================== Change Password Function
+// change password function
+function changePassword() {
+    // get current password from user
+    let oldPassword = prompt("Enter current password:");
+    // check current password (authentication)
+    if (oldPassword && checkPassword(oldPassword)) {
+        // get new password from user 
+        let newPassword = prompt("Enter new password (more than 3 characters):");
+        if (newPassword && newPassword.length > 3 ) {
+            // Save the new password
+            savePassword(newPassword);
+            showMessage("✅ Password changed successfully", "success");
+            return true;
+        } else{
+            showLoginError("New password must be more than 3 characters");
+            return false;
+        }
+    } 
+    else{
+        // If the current password was incorrect
+        showLoginError("The current password is incorrect");
+        return false;
+    }
+}
+
+
+// ! ====================== Lock Screen Function
+// protect the application from unauthorized people by hiding the original content and displaying the login page.
+function lockScreen() {
+    // Show login page (lock)
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('passwordInput').value = '';
+
+    // Cancel the auto-lock timer
+    // If there was a timer set for auto-lock, cancel it Since the screen is now locked, there is no need for a timer to re-lock
+    if (lockTimeout) clearTimeout(lockTimeout);
+}
+
+// ! ====================== Unlock Screen Function
+// Checks the user's input password and, if correct, opens access to the main application.
+function unlockScreen(password) {
+    // Check password correctness
+    if ( password && checkPassword(password)) {
+        // If the password was correct Hide login page and Show the main program
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+        // Start auto-lock timer if If the user does nothing in 5 minutes, the page will be locked again
+        startLockTimer();
+        return true;
+    } else {
+        // If the password is incorrect: Show error message to user
+        showLoginError("❌ The password is incorrect!");
+        return false;
+    }
+}
+
+// ! ====================== Start Lock Timer Function
+// Increase app security by automatically locking the screen after a period of user inactivity
+function startLockTimer() {
+    // If there is a previous timer, cancel it
+    if (lockTimeout) clearTimeout(lockTimeout);
+    // Set a new timer
+    lockTimeout = setTimeout(() => {
+        lockScreen();
+    }, LOCK_TIMEOUT_MS);
+}
+
+
+// ! ====================== Reset Lock Timer Function
+// Reset the user's inactivity time to zero. If the user is actively working with the application, the application will not lock.
+function resetLockTimer() {
+    // Check if the main application is running or not
+    if (document.getElementById('mainApp').style.display === 'block') {
+        // Restart the timer.
+        startLockTimer();
+    }
+}
+
+
+// ! ====================== Show Login Error Function
+// display login errors (such as incorrect password) in a temporary and way
+function showLoginError(msg) {
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = msg;
+    messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            padding: 15px 28px;
+            border-radius: 12px;
+            z-index: 2000;
+            background: rgb(0, 0, 0);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+    `;
+    document.body.insertAdjacentElement("afterbegin",messageDiv);
+    document.getElementById("loginOverlay").style.background='linear-gradient(135deg, rgb(230, 0, 0) 0%, rgb(160, 0, 0) 100%)';
+    setTimeout(() => {
+        messageDiv.remove();
+        document.getElementById("loginOverlay").style.background ='linear-gradient(135deg, var(--primary) 0%, rgb(5, 87, 62) 100%)';
+    }, 3000);
+}
 
 
 // ! ====================== Save Array To Local Storage
@@ -23,7 +162,6 @@ const STORAGE_KEY = "users_data";
 function saveToLocalStorage() {
     localStorage.setItem(STORAGE_KEY , JSON.stringify(users))
 }
-
 
 // ! ====================== Get Array From Local Storage
 // get array from local storage
@@ -91,8 +229,6 @@ function showMessage(msg, type) {
         messageDiv.remove();
     }, 5000);
 }
-
-
 
 // ! ====================== Depoit Function
 // get data from input , check validation and excute deposit transaction function
@@ -200,10 +336,11 @@ function showTransactions(person) {
             return `
                 <div class="transaction-item ${transactionClass}">
                     <div>
+                        <strong>#${index + 1}</strong> - 
                         <span class="transaction-type-badge ${typeBadgeClass}">${typeText}</span>
-                        <strong>#${index + 1}</strong> - Amount: <span class="${amountClass}">${amountSign} ${trans.amount.toLocaleString()} $</span>
+                        Amount: <span class="${amountClass}">${amountSign} ${trans.amount.toLocaleString()} $</span>
                     </div>
-                    <div style="margin-top: 5px; font-size: 0.85rem; color: rgb(216, 216, 216);">
+                    <div style="margin-top: 5px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">
                         📅  Date: ${trans.date} - 🕐 Hour: ${trans.time}
                     </div>
                 </div>
@@ -213,12 +350,6 @@ function showTransactions(person) {
 
     modal.style.display = 'flex';
 }
-
-// `
-//             <div class="transaction-item">
-//                 <strong>#${index + 1}</strong> - Amount: <span style="color: rgb(7, 204, 145); font-weight: bold;">${trans.amount.toLocaleString()} $</span><br> 📅 Date: ${trans.date} - 🕐 Hour: ${trans.time}
-//             </div>
-//         `).join('')
 
 
 // ! ===================== Withdraw Function
@@ -463,16 +594,6 @@ function clearAllData() {
 }
 
 
-// ! ======================= Handle Enter Key
-// handeling the enter key
-function onEnterKey(e) {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        Deposit();
-    }
-}
-
-
 // ! ===================== Security functions
 // Security function 1 : Clear user input (for storage)
 function sanitizeInput(str) {
@@ -523,11 +644,6 @@ function init() {
     loadFromLocalStorage();
     // show data in rable
     renderTable();
-    // handle the enter key
-    const inputs = ['fName','lName','amount'];
-    inputs.forEach((id) => {
-        document.getElementById(id).addEventListener('keypress' , onEnterKey);
-    })
 }
 
 init(); // RUN
@@ -550,8 +666,19 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// ! ===================== Events
+
+// ! ===================== User Actions To Reset The Timer Function
+// User actions to reset the timer
+const events = ['click', 'keypress', 'scroll', 'mousemove'];
+events.forEach(ev => document.addEventListener(ev, resetLockTimer));
+
+
+// ! ===================== Events Execution
 // event execution
+loginBtn.addEventListener("click" , () => unlockScreen(passwordInput.value) ? resetLockTimer() : false );
+passwordInput.addEventListener("keypress" , (e) => { if(e.key === 'Enter') loginBtn.click()});
+lockScreenBtn.addEventListener("click" , lockScreen);
+changePasswordBtn.addEventListener("click" , changePassword);
 depositBtn.addEventListener("click" , deposit);
 withdrawBtn.addEventListener("click" , withdraw);
 clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? clearUserTransactions(currentSelectedUser.id) : false);

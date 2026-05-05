@@ -30,6 +30,12 @@ body::selection{
 }
 
 
+/* ! =====================================- Main App */
+.main-app{
+    width: 100%;
+    display: none;
+}
+
 /* ! ======================================  Header */
 
 
@@ -47,22 +53,58 @@ header h1{
     margin-left: 70px;
 }
 
-header div.search{
+header div.header-content{
     width: 35%;
     height: 70%;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 30px 0 0;
+    padding-right: 10px;
 }
 
 
-header div.search span {
+.header-content .security-container{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.security-container .security-btn{
+    color: var(--white);
+    padding: 11px 15px;
+    font-size: 15px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 6px;
+    border: 2px solid ;
+    background-color: black;
+}
+
+.security-container .change-password-btn {
+    border-color: rgb(243, 57, 0);
+}
+
+.security-container .change-password-btn:hover{
+    background: rgb(243, 57, 0);
+}
+        
+.security-container .lock-btn {
+    border-color: var(--secondary);
+}
+
+.security-container .lock-btn:hover{
+    background: var(--secondary);
+}
+
+
+header .search {
     color: var(--white);
     font-size: 18px;
     margin-right: 5px;
 }
-
+/* 
 header div.search input{
     width: 250px;
     outline: none;
@@ -77,7 +119,7 @@ header div.search input{
 header div.search input:focus{
     outline: none;
     border: 1px solid rgb(255, 255, 255);
-}
+} */
 
 
 /* ! =========================================== Information Container */
@@ -344,6 +386,8 @@ table tbody .empty-row{
 }
 
 
+
+
 /* ! =========================== Buttons Group */
 
 .under-table-container .useful-buttons{
@@ -524,4 +568,79 @@ table tbody .empty-row{
 
 .clear-transactions-btn:hover{
     background-color: rgb(171 0 0);
+}
+
+
+/* ! ======================== Login Overlay */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, rgb(11, 141, 102)  0%, rgb(0, 63, 44) 100%);
+}
+        
+.login-box {
+    background: rgb(12, 12, 12);
+    color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.login-box h2 {
+    color: #ffffff;
+    margin-bottom: 40px;
+}
+        
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    color: rgb(0, 0, 0);
+    border: 2px solid rgb(224, 224, 224);
+    border-radius: 8px;
+    font-size: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    outline: none;
+    background-color: rgb(224, 224, 224);
+}
+        
+.login-box input:focus {
+    border-color: rgb(6, 182, 129);
+    outline: none;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    background: linear-gradient(135deg, var(--primary) 0%, rgb(5, 87, 62) 100%);
+}
+
+.login-box button:hover{
+    transform: scale(1.02);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    margin: 50px;
 }
