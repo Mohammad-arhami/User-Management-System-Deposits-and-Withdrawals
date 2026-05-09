@@ -12,6 +12,12 @@ const passwordInput = document.getElementById("passwordInput");
 const lockScreenBtn = document.getElementById("lockScreenBtn");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
 
+const searchModalBtn = document.getElementById('searchModalBtn');
+const searchModal = document.getElementById('searchModal');
+const closeSearchModal = document.querySelector('.close-search-modal');
+const searchInputModal = document.getElementById('searchInputModal');
+        
+
 // array for storage users localy 
 let users = [];
 let currentSelectedUser = null;
@@ -443,6 +449,89 @@ function clearUserTransactions(userId) {
     }
 }
 
+// ! ====================== Search Modal Events Function
+// Open modal on button click
+function openSearchModal() {
+    searchModal.style.display = 'flex';
+    searchInputModal.value = '';
+    searchInputModal.focus();
+    document.getElementById('searchResults').innerHTML = '<div class="no-results"> Type something ...</div>';
+}
+
+// Close the modal by clicking the × button.
+closeSearchModal.addEventListener("click" , () => {
+    searchModal.style.display = 'none';
+});
+
+// Close modal by clicking on dark background
+window.addEventListener("click" , (e) => {
+    if (e.target === searchModal ) {
+        searchModal.style.display = 'none';
+    }
+});
+
+// Live search (every time the user types)
+searchInputModal.addEventListener("input", (e) => {
+    performSearch(e.target.value)
+});
+
+// Search with Enter key (optional)
+searchInputModal.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        performSearch(e.target.value);
+    }
+});
+
+
+// ! ====================== Performa Search Function
+// Search capability in modal
+function performSearch(searchTerm) {
+    const resultsDiv = document.getElementById("searchResults");
+    const term = sanitizeInput(searchTerm.trim()).toLocaleString();
+    
+    // If the search term was empty
+    if (!term) {
+        resultsDiv.innerHTML = '<div class="no-results">🔍 Enter search term... </div>';
+        return;
+    }
+
+    // Filter users by first or last name
+    const filteredUsers = users.filter(user => 
+        user.firstName.toLowerCase().includes(term) || 
+        user.lastName.toLowerCase().includes(term)
+    );
+        
+    // If no results are found
+    if (filteredUsers.length === 0) {
+        resultsDiv.innerHTML = '<div class="no-results">❌ No users found with this term!</div>';
+        return;
+    }
+
+    // Creating HTML to display results
+    resultsDiv.innerHTML = filteredUsers.map(user => `
+        <div class="search-result-item" data-id="${user.id}">
+            <div class="search-result-name">${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</div>
+            <div class="search-result-details">
+                <span class="search-result-balance">💰 Total Assets: ${user.totalAssets.toLocaleString()} $</span>
+                <span>📋 transactions: ${user.transactions.length}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Add a click event to each result
+    document.querySelectorAll(".search-result-item").forEach(item => {
+        item.addEventListener("click" , () => {
+            const userId = parseInt(item.dataset.id);
+            const user = users.find(u => u.id === userId);
+
+            if (user) {
+                searchModal.style.display = 'none';
+                showTransactions(user)
+            }
+        })
+    })
+}
+
 
 // ! ====================== Render The Table
 // render the table
@@ -679,6 +768,7 @@ loginBtn.addEventListener("click" , () => unlockScreen(passwordInput.value) ? re
 passwordInput.addEventListener("keypress" , (e) => { if(e.key === 'Enter') loginBtn.click()});
 lockScreenBtn.addEventListener("click" , lockScreen);
 changePasswordBtn.addEventListener("click" , changePassword);
+searchModalBtn.addEventListener("click", openSearchModal);
 depositBtn.addEventListener("click" , deposit);
 withdrawBtn.addEventListener("click" , withdraw);
 clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? clearUserTransactions(currentSelectedUser.id) : false);

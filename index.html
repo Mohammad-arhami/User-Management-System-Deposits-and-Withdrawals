@@ -7,8 +7,6 @@
 </head>
 <body>
 
-
-    
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
             <h2>Login to the system🔐</h2>
@@ -23,6 +21,7 @@
             <div class="header-content">
                 <!-- <button class="search">🔎<button> -->
                 <div class="security-container">
+                    <button id="searchModalBtn" class="search-btn">🔍</button>
                     <button id="changePasswordBtn" class="change-password-btn security-btn">Change Password 🔑</button>
                     <button id="lockScreenBtn" class="lock-btn security-btn">Lock Screen 🔒</button>
                 </div>
@@ -77,6 +76,24 @@
                 <button id="saveBackupBtn" class="save-backup useful-buttons">Save Backup 💾</button>
                 <button id="restoreBackupBtn" class="restore-backup useful-buttons">Restore Backup 📂</button>
                 <button id="clearAllBtn" class="clear-btn useful-buttons">Delete All users 🗑</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchModal" class="search-modal">
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <h3>Search Users</h3>
+                <span class="close-search-modal">&times;</span>
+            </div>
+            <div class="search-modal-body">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInputModal" placeholder="Search by first or last name..." autocomplete="off">
+                </div>
+                <div id="searchResults" class="search-results">
+
+                </div>
             </div>
         </div>
     </div>
