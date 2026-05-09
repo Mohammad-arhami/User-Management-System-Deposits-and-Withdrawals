@@ -75,7 +75,7 @@ function changePassword() {
     } 
     else{
         // If the current password was incorrect
-        showLoginError("The current password is incorrect");
+        showLoginError("❌ The current password is incorrect");
         return false;
     }
 }
