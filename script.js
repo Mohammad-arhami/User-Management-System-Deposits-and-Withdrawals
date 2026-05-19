@@ -11,16 +11,20 @@ const loginBtn = document.getElementById("loginBtn");
 const passwordInput = document.getElementById("passwordInput");
 const lockScreenBtn = document.getElementById("lockScreenBtn");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
-
 const searchModalBtn = document.getElementById('searchModalBtn');
 const searchModal = document.getElementById('searchModal');
 const closeSearchModal = document.querySelector('.close-search-modal');
 const searchInputModal = document.getElementById('searchInputModal');
-        
+const modal = document.getElementById('transactionModal');
+const closeModal = document.querySelector('.close-modal');
+const chartModal = document.getElementById('chartModal');
+const closeChartModal = document.querySelector('.close-chart-modal');
+
 
 // array for storage users localy 
 let users = [];
 let currentSelectedUser = null;
+let balanceChart = null;
 
 // users key for save to localstorage
 const STORAGE_KEY = "users_data";
@@ -109,6 +113,7 @@ function unlockScreen(password) {
     } else {
         // If the password is incorrect: Show error message to user
         showLoginError("❌ The password is incorrect!");
+        passwordInput.value = '';
         return false;
     }
 }
@@ -201,7 +206,6 @@ function getCurrentDateTime() {
 }
 
 
-
 // ! ======================= Find User By Name
 // find existing user by name and last-name in array and return it
 function findUserByName(firstName, lastName) {
@@ -290,7 +294,7 @@ function depositTransaction(firstName, lastName , amount) {
         existingUser.totalAssets += amountNum; // add new amount to totalAssets
         saveToLocalStorage();
         renderTable();
-        showMessage(`🟢 transaction successful ${amountNum.toLocaleString()} $ added to ${firstName} ${lastName}`,"success");
+        showMessage(`🟢 transaction successful ${amountNum.toLocaleString()} $ added to ${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(lastName)}`,"success");
     } else{
         // create new user
         const newUser = {
@@ -318,7 +322,7 @@ function depositTransaction(firstName, lastName , amount) {
 };
 
 
-// ! ===================== show Transactions 
+// ! ===================== Show Transactions 
 // show user transactions in modal
 function showTransactions(person) {
     currentSelectedUser = person;
@@ -326,7 +330,7 @@ function showTransactions(person) {
     const modalTitle = document.getElementById("modalTitle");
     const transactionsList = document.getElementById("transactionsList");
 
-    modalTitle.textContent = `📋 ${person.firstName} ${person.lastName} transactions`;
+    modalTitle.textContent = `📋 ${capitalizeFirstLetter(person.firstName)} ${capitalizeFirstLetter(person.lastName)} Transactions`;
 
     if (person.transactions.length === 0) {
         transactionsList.innerHTML = '<div class="empty-state">No Transactions Recorded</div>';
@@ -355,6 +359,168 @@ function showTransactions(person) {
     }
 
     modal.style.display = 'flex';
+}    
+
+
+// ! ===================== Calculate Balance Over Time Function
+// Inventory calculation function over time
+function calculateBalanceOverTime(person) {
+    let sortedTransactions = [...person.transactions].sort((a, b) => 
+        a.date.localeCompare(b.date)  // Compare solar date
+    );
+    
+    const dates = [];        // Array for storing dates
+    const balances = [];     // Array for storing inventory
+    let currentBalance = 0;  // Current balance (starts at zero)
+    
+    // Balance calculation after each transaction
+    sortedTransactions.forEach(trans => {
+        if (trans.type === 'deposit') {
+            currentBalance += trans.amount; // Deposit: Increase balance
+        } else {
+            currentBalance -= trans.amount; // Withdraw: Inventory reduction
+        }
+        dates.push(trans.date); // Save the date 
+        balances.push(currentBalance); // Save new inventory
+    }); 
+ 
+    // Returning data for charting
+    return { dates, balances };
+}
+
+
+// ! ===================== Show Chart Function
+// creating charts with Chart.js
+function showChart(person) {
+    // Calculating chart data
+    const { dates, balances } = calculateBalanceOverTime(person);
+
+    // Checking for transaction existence
+    if (dates.length === 0) {
+        showMessage(`❌ User ${person.firstName} ${person.lastName} has no transactions to display! `, "error");
+        return;
+    }
+    
+    // modal display
+    const modalTitle = document.getElementById('chartModalTitle');
+    modalTitle.innerHTML = `📊 ${escapeHtml(capitalizeFirstLetter(person.firstName))} ${escapeHtml(capitalizeFirstLetter(person.lastName))} Financial Trend Chart`;    
+    chartModal.style.display = 'flex';
+
+    // Determination of colors
+    const textColor ='#cbd5e0';
+    const lineColor = 'rgb(0, 174, 255)';
+    const gridColor = 'rgba(255, 255, 255, 0.27)';
+    
+    // Getting the canvas background for drawing a chart and (Getting a 2D texture for drawing)
+    const ctx = document.getElementById('balanceChart').getContext('2d');
+        
+    // If the previous graph exists, destroy it
+    if (balanceChart) {
+        balanceChart.destroy();
+    }
+
+    // Check for the existence of the Chart.js library
+    if (typeof Chart === 'undefined') {
+        showMessage("❌ Error loading chart!", "erroe");
+        return;
+    }
+
+    // Creating a new chart with Chart.js
+    balanceChart = new Chart(ctx, {
+        type: 'line',                  // Chart type
+        data: {                        
+            labels: dates,             // X-axis labels ["1402/11/10", "1402/11/15", "1402/11/20"]
+            datasets: [{
+                label: 'Assets',       // Data series title
+                data: balances,        // Y axis values [100000, 200000, 150000]
+                borderWidth: 3,        
+                borderColor: lineColor,
+                backgroundColor: 'rgba(0, 174, 255, 0.11)',  // Underline color (semi-transparent)
+                fill: true,             // Fill in below the line    
+                tension: 0.3,           // Line curvature (0=smooth, 1=curved)
+                pointRadius: 5,         // The size of the points on the line
+                pointHoverRadius: 7,    // The size of the points on the line (Hoverd)
+                pointBackgroundColor: lineColor,
+                pointBorderColor: 'rgb(255, 255, 255)'
+            }]
+        },
+        options: {
+            responsive: true,           // Responsive (changes with the page)
+            maintainAspectRatio: true,  // Maintain aspect ratio
+            plugins: {                  // Plugins are additional features that are added to Chart.js and change the behavior of the chart.
+                legend: {               // Help settings (When the user clicks on any Legend item, that dataset is hidden or displayed in the chart.)
+                    display: true,
+                    position: 'top',
+                    align: 'center',
+                    labels: {
+                        color: textColor,
+                        font: { size: 14 },
+                        padding: 5,
+                        pointStyle: 'circle', // box shape 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+                        usePointStyle: true,  // Using a point shape instead of a box
+                        boxWidth: 8,
+                        boxHeight: 8,
+                    }
+                },
+                tooltip: {              // Hover description management
+                    caretSize: 0,       // Delete pointer
+                    caretPadding: 0,    // Pointer distance
+                    cornerRadius: 10,   // Rounding tooltip corners
+                    titleColor: 'rgb(221, 221, 221)',
+                    bodyColor: 'rgb(255, 255, 255)',
+                    borderColor: 'rgba(0, 0, 0, 0.7)',
+                    backgroundColor:'rgba(0, 0, 0, 0.6)',
+                    borderWidth: 2,      
+                    padding : 8,
+                    displayColors: false, // Remove the colored box inside the tooltip
+                    callbacks: {
+                        title: (tooltipItems) => {
+                            // Change the description title
+                            return `📅 Date: ${tooltipItems[0].label}`;
+                        },
+                        label: function(context) {
+                            // context.raw = point value (e.g. 150000)
+                            return `💰 Total Assets: ${context.raw.toLocaleString()} $`;
+                        }
+                    }
+                }
+            },
+            scales: {                  // Axis settings
+                y: {                   // Y-Axis settings
+                    type: 'linear',    // Scale type
+                    beginAtZero: true, // Axis starts from zero.
+                    ticks: {           // Label settings (numbers on the axis)
+                        color: textColor,
+                        callback: function(value) {
+                            return value.toLocaleString() + ' $';
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    },
+                    border: {
+                        color: 'rgb(226, 226, 226)',
+                        width: 2
+                    },
+                  
+                },
+                x: {                   // X-Axis settings
+                    ticks: {
+                        color: textColor,
+                        maxRotation: 45,
+                        minRotation: 45,
+                    },
+                    grid: { 
+                        color: gridColor,
+                    },
+                    border: {
+                        color: 'rgb(226, 226, 226)',
+                        width: 2
+                    },
+                }
+            }
+        }
+    });
 }
 
 
@@ -408,7 +574,7 @@ function withdrawTransaction(firstName , lastName , amount) {
     }  
 
     if (!existingUser) {
-        showMessage(`❌ Error: User with name ${firstName} ${lastName} not found! User must exist to withdraw`,"fail");
+        showMessage(`❌ Error: User with name ${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(lastName)} not found! User must exist to withdraw`,"fail");
         return false;
     }
 
@@ -421,7 +587,7 @@ function withdrawTransaction(firstName , lastName , amount) {
     existingUser.totalAssets -= amountNum;
     saveToLocalStorage();
     renderTable();
-    showMessage(`🔴 Withdrawal of ${amountNum.toLocaleString()} $ from ${firstName} ${lastName} account was successful! New balance: ${existingUser.totalAssets.toLocaleString()} $`,"success");
+    showMessage(`🔴 Withdrawal of ${amountNum.toLocaleString()} $ from ${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(lastName)} account was successful! New balance: ${existingUser.totalAssets.toLocaleString()} $`,"success");
     return true;
 }
 
@@ -444,7 +610,7 @@ function clearUserTransactions(userId) {
                 currentSelectedUser = null;
             }
 
-            showMessage(`🗑 All transactions for ${user.firstName} ${user.lastName} have been deleted`,"success");
+            showMessage(`🗑 All transactions for ${capitalizeFirstLetter(user.firstName)} ${capitalizeFirstLetter(user.lastName)} have been deleted`,"success");
         }
     }
 }
@@ -457,18 +623,6 @@ function openSearchModal() {
     searchInputModal.focus();
     document.getElementById('searchResults').innerHTML = '<div class="no-results"> Type something ...</div>';
 }
-
-// Close the modal by clicking the × button.
-closeSearchModal.addEventListener("click" , () => {
-    searchModal.style.display = 'none';
-});
-
-// Close modal by clicking on dark background
-window.addEventListener("click" , (e) => {
-    if (e.target === searchModal ) {
-        searchModal.style.display = 'none';
-    }
-});
 
 // Live search (every time the user types)
 searchInputModal.addEventListener("input", (e) => {
@@ -510,7 +664,7 @@ function performSearch(searchTerm) {
     // Creating HTML to display results
     resultsDiv.innerHTML = filteredUsers.map(user => `
         <div class="search-result-item" data-id="${user.id}">
-            <div class="search-result-name">${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</div>
+            <div class="search-result-name">${escapeHtml(capitalizeFirstLetter(user.firstName))} ${escapeHtml(capitalizeFirstLetter(user.lastName))}</div>
             <div class="search-result-details">
                 <span class="search-result-balance">💰 Total Assets: ${user.totalAssets.toLocaleString()} $</span>
                 <span>📋 transactions: ${user.transactions.length}</span>
@@ -570,11 +724,11 @@ function createTableRow(person , index) {
 
     // first name cell
     const firstNameCell = document.createElement('td');
-    firstNameCell.textContent = person.firstName;
+    firstNameCell.textContent = capitalizeFirstLetter(person.firstName);
 
     // last name cell
     const lastNameCell = document.createElement('td');
-    lastNameCell.textContent = person.lastName;
+    lastNameCell.textContent = capitalizeFirstLetter(person.lastName);
 
     // assets cell
     const totalAssetsCell = document.createElement('td');
@@ -593,6 +747,22 @@ function createTableRow(person , index) {
     viewButton.addEventListener("click" , () => {
         showTransactions(person);
     })
+
+
+    // financial chart cell
+    const financialChartCell = document.createElement('td');
+    const chartButton = document.createElement("a");
+    chartButton.textContent = "Chart";
+    chartButton.className = "chart-btn";
+
+    // add chart button into financial chart cell
+    financialChartCell.appendChild(chartButton);
+
+    // financial chart event
+    chartButton.addEventListener("click" , () => {
+        showChart(person);
+    })
+
 
     // action cell (delete button)
     const actionCell = document.createElement('td');
@@ -615,6 +785,7 @@ function createTableRow(person , index) {
     row.appendChild(lastNameCell);
     row.appendChild(totalAssetsCell);
     row.appendChild(transactionCell);
+    row.appendChild(financialChartCell);
     row.appendChild(actionCell);
 
     return row;
@@ -628,7 +799,7 @@ function deleteUserByIndex(index) {
         users.splice(index , 1); // delete from array
         saveToLocalStorage(); // save in local storage
         renderTable(); // Re-render the table
-        showMessage(`🗑 User ${users[index].firstName} ${users[index].lastName} was successfully deleted`, "success");
+        showMessage(`🗑 User ${capitalizeFirstLetter(users[index].firstName)} ${capitalizeFirstLetter(users[index].lastName)} was successfully deleted`, "success");
 
     }
 }
@@ -682,6 +853,13 @@ function clearAllData() {
     }
 }
 
+// ! ===================== Capitalize First Letter Function
+// change the first letter of a string to uppercase
+function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    str = str.trim().toLowerCase();
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 // ! ===================== Security functions
 // Security function 1 : Clear user input (for storage)
@@ -738,11 +916,8 @@ function init() {
 init(); // RUN
 
 
-// ! ====================== Modal Event
-// close modal event
-const modal = document.getElementById('transactionModal');
-const closeModal = document.querySelector('.close-modal');
-    
+// ! ====================== Close Modal Events
+// close transaction modal  
 closeModal.addEventListener('click', () => {
     modal.style.display = 'none';
     currentSelectedUser = null;
@@ -752,6 +927,38 @@ window.addEventListener('click', (e) => {
     if (e.target === modal) {
         modal.style.display = 'none';
         currentSelectedUser = null;
+    }
+});
+
+// close chart modal
+closeChartModal.addEventListener('click', () => {
+    chartModal.style.display = 'none';
+    if (balanceChart) {
+        balanceChart.destroy(); // Destroying the graph to free up memory
+        balanceChart = null;
+    }
+});
+
+// Close by clicking on the dark background
+window.addEventListener('click', (e) => {
+    if (e.target === chartModal) {
+        chartModal.style.display = 'none';
+        if (balanceChart) {
+            balanceChart.destroy(); // Destroying the graph to free up memory
+            balanceChart = null;
+        }
+    }
+});
+
+// close search modal
+closeSearchModal.addEventListener("click" , () => {
+    searchModal.style.display = 'none';
+});
+
+// Close modal by clicking on dark background
+window.addEventListener("click" , (e) => {
+    if (e.target === searchModal ) {
+        searchModal.style.display = 'none';
     }
 });
 

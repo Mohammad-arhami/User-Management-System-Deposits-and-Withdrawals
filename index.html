@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
 </head>
 <body>
 
@@ -61,6 +65,7 @@
                         <th>Last Name</th>
                         <th>Total Assets</th>
                         <th>Transactions</th>
+                        <th>📊</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -80,6 +85,7 @@
         </div>
     </div>
 
+    <!-- Modals -->
     <div id="searchModal" class="search-modal">
         <div class="search-modal-content">
             <div class="search-modal-header">
@@ -97,6 +103,26 @@
             </div>
         </div>
     </div>
+
+
+
+
+    <div id="chartModal" class="chart-modal">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h3 id="chartModalTitle">📊 Financial Trend Chart</h3>
+                <span class="close-chart-modal">&times;</span>
+            </div>
+            <div class="chart-modal-body">
+                <div class="chart-container">
+                    <canvas id="balanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 
     <div id="transactionModal" class="modal">
         <div class="modal-content">

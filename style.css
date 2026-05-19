@@ -123,7 +123,7 @@ header div.header-content{
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(5px);
-        background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
         
 .search-modal-content {
@@ -453,26 +453,9 @@ table , th , tr , td {
 
 th , td{
     text-align: center;
-    padding: 20px;
+    padding:20px;
 }
 
-.view-btn{
-    color: var(--white);
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.2s;
-    padding: 3px 12px;
-    border-radius: 8px;
-    border: 1px solid rgb(0, 174, 255);
-    font-size: 14px;
-    transition: 0.3s;
-    /* background-color: rgb(0, 174, 255); */
-}
-
-.view-btn:hover{
-    /* color: rgb(0, 151, 221); */
-    background-color:  rgb(0, 174, 255);
-}
 
 table thead th:nth-of-type(1){
     width: 3%;
@@ -480,39 +463,76 @@ table thead th:nth-of-type(1){
 }
 
 table thead th:nth-of-type(2){
-    width: 24%;
+    width: 19%;
 }
 
 table thead th:nth-of-type(3){
-    width: 27%;
+    width: 22%;
 }
 
 table thead th:nth-of-type(4){
-    width: 30%;
+    width: 25%;
 }
 
 table thead th:nth-of-type(5){
-    width: 14%;
+    width: 13%;
 }
 
 table thead th:nth-of-type(6){
-    width: 7%;
+    width: 10%;
 }
+
+table thead th:nth-of-type(7){
+    width: 8%;
+}
+
+.view-btn{
+    color: var(--white);
+    text-decoration: none;
+    cursor: pointer;
+    padding: 3px 12px;
+    border-radius: 8px;
+    border: 1px solid rgb(0, 174, 255);
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.view-btn:hover{
+    background-color:  rgb(0, 174, 255);
+}
+
+
+.chart-btn{
+    color: var(--white);
+    text-decoration: none;
+    cursor: pointer;
+    padding: 3px 12px;
+    border-radius: 8px;
+    border: 1px solid rgb(0, 255, 179);
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.chart-btn:hover{
+    background-color: rgb(0, 255, 179);
+}
+
 
 .delete-btn {
     /* background: rgb(230, 0, 0); */
     background-color: transparent;
-    border: none;
-    color: rgb(255, 0, 0);
-    /* padding: 5px 15px; */
-    border-radius: 10px;
-    font-size: 15px;
+    color: var(--white);
+    padding: 3px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    border: 1px solid rgb(230, 0, 0);
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.3s;
+    background-color:  rgb(230, 0, 0);
 }
 
 .delete-btn:hover {
-    color: rgb(233, 0, 0);
+    background-color:  rgba(230, 0, 0, 0.904);
 }
 
 table tbody .empty-row{
@@ -600,7 +620,7 @@ table tbody .empty-row{
 }
 
 
-/* ! ====================== Modal */
+/* ! ====================== Transaction Modal */
 
 .modal {
     display: none;
@@ -623,6 +643,7 @@ table tbody .empty-row{
     width: 90%;
     max-height: 80%;
     overflow-y: auto;
+    animation: modalFadeIn 0.3s ease;
 }
         
 
@@ -644,11 +665,12 @@ table tbody .empty-row{
 }
         
 .close-modal:hover {
-    color: rgb(200, 0, 0);
+    transform: scale(1.1);
+    color: rgb(210, 0, 0);
 }     
           
 
-/* ! ================================ transaction */
+/* ! ================================ transaction item */
 
 .transaction-item {
     background: transparent;
@@ -730,6 +752,76 @@ table tbody .empty-row{
 }
 
 
+/* ! ======================== Chart Modal */
+.chart-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+        
+.chart-modal-content {
+    background: var(--darkGray);
+    border-radius: 28px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 100vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    animation: modalFadeIn 0.3s ease;
+}
+
+
+.chart-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    /* border-bottom: 2px solid red; */
+}
+        
+.chart-modal-header h3 {
+    margin: 0;
+    color: rgb(255, 255, 255);
+    font-size: 25px;
+}
+        
+.close-chart-modal {
+    cursor: pointer;
+    font-size: 30px;
+    color: rgb(230, 0, 0);
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.close-chart-modal:hover {
+    transform: scale(1.1);
+    color: rgb(210, 0, 0);
+}
+        
+.chart-modal-body {
+    padding: 25px;
+}
+        
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+        
+canvas {
+    max-height: 400px;
+    width: 100%;
+}
+
+
 /* ! ======================== Login Overlay */
 .login-overlay {
     position: fixed;
@@ -791,7 +883,6 @@ table tbody .empty-row{
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
     background: linear-gradient(135deg, var(--primary) 0%, rgb(5, 87, 62) 100%);
 }
 
