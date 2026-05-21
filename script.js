@@ -350,7 +350,7 @@ function showTransactions(person) {
                         <span class="transaction-type-badge ${typeBadgeClass}">${typeText}</span>
                         Amount: <span class="${amountClass}">${amountSign} ${trans.amount.toLocaleString()} $</span>
                     </div>
-                    <div style="margin-top: 5px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">
+                    <div style="margin-top: 5px; font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.85);">
                         📅  Date: ${trans.date} - 🕐 Hour: ${trans.time}
                     </div>
                 </div>
@@ -748,7 +748,6 @@ function createTableRow(person , index) {
         showTransactions(person);
     })
 
-
     // financial chart cell
     const financialChartCell = document.createElement('td');
     const chartButton = document.createElement("a");
@@ -762,7 +761,6 @@ function createTableRow(person , index) {
     chartButton.addEventListener("click" , () => {
         showChart(person);
     })
-
 
     // action cell (delete button)
     const actionCell = document.createElement('td');
@@ -982,3 +980,6 @@ clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? 
 saveBackupBtn.addEventListener("click" , saveBackup);
 restoreBackupBtn.addEventListener("click" , restoreBackup)
 clearAllBtn.addEventListener("click" , clearAllData);
+
+
+
