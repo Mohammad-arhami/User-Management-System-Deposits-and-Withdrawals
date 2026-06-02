@@ -93,6 +93,9 @@ function lockScreen() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('passwordInput').value = '';
 
+    // fucus on password input after click on lock screen
+    passwordInput.focus();
+
     // Cancel the auto-lock timer
     // If there was a timer set for auto-lock, cancel it Since the screen is now locked, there is no need for a timer to re-lock
     if (lockTimeout) clearTimeout(lockTimeout);
@@ -980,6 +983,3 @@ clearUserTransactionsBtn.addEventListener("click" , () => currentSelectedUser ? 
 saveBackupBtn.addEventListener("click" , saveBackup);
 restoreBackupBtn.addEventListener("click" , restoreBackup)
 clearAllBtn.addEventListener("click" , clearAllData);
-
-
-
